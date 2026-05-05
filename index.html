@@ -1,433 +1,243 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FinDash — Dashboard Financiero</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinDash SMTO | Dashboard Contable</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Estilos específicos para las nuevas pestañas */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            background: var(--bg-2);
+            padding: 8px;
+            border-radius: 16px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid var(--border-1);
+        }
+
+        .tab-btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-2);
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn i {
+            font-size: 1.2rem;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .upload-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        #rawSheetsList {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: var(--text-2);
+            display: none;
+        }
+
+        .mode-raw #rawSheetsList {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <span>FinDash</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i class="ph ph-squares-four"></i> Dashboard</a>
+                <a href="#" class="nav-item"><i class="ph ph-chart-line-up"></i> Ingresos</a>
+                <a href="#" class="nav-item"><i class="ph ph-chart-line-down"></i> Egresos</a>
+                <a href="#" class="nav-item"><i class="ph ph-bank"></i> Bancos</a>
+                <a href="#" class="nav-item"><i class="ph ph-file-text"></i> Reportes</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">SM</div>
+                    <div class="user-info">
+                        <span class="name">SMTO Contabilidad</span>
+                        <span class="role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
-  <!-- ══════════════════════════════════
-       HEADER
-  ══════════════════════════════════ -->
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo">
-        <!-- Logo SMT: coloca el archivo en assets/SMTLogo.png (o .svg, .webp) -->
-        <img
-          id="smt-logo"
-          src="assets/SMTLogo.png"
-          alt="SMT Logo"
-          height="36"
-          style="object-fit:contain;max-width:120px;"
-          onerror="this.onerror=null;this.style.display='none';document.getElementById('smt-logo-fallback').style.display='flex';"
-        />
-        <!-- Fallback si no existe el archivo -->
-        <span id="smt-logo-fallback" style="display:none;align-items:center;gap:8px;">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="28" height="28" rx="8" fill="url(#grad)"/>
-            <path d="M8 18L12 13L15 16L18 11L20 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <defs>
-              <linearGradient id="grad" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#6366f1"/>
-                <stop offset="1" stop-color="#8b5cf6"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="logo-text">SMT</span>
-        </span>
-      </div>
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-search">
+                    <h1>Resumen Financiero</h1>
+                    <p>Monitoreo de flujos de efectivo y estados bancarios</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon"><i class="ph ph-bell"></i></button>
+                    <button class="btn-primary" onclick="location.reload()"><i class="ph ph-arrows-clockwise"></i> Actualizar</button>
+                </div>
+            </header>
 
-      <div class="header-actions">
-        <!-- Filtro por año (oculto hasta tener datos) -->
-        <div id="yearFilterWrapper" class="month-filter-wrapper hidden">
-          <label for="yearFilter" class="filter-label">Año</label>
-          <select id="yearFilter" class="filter-select">
-            <option value="all">Todos</option>
-          </select>
-        </div>
+            <div class="mode-selector">
+                <button class="tab-btn active" id="btnStandard" onclick="switchMode('standard')">
+                    <i class="ph ph-file-spreadsheet"></i> Formato Estándar
+                </button>
+                <button class="tab-btn" id="btnRaw" onclick="switchMode('raw')">
+                    <i class="ph ph-bank"></i> Información en Crudo
+                </button>
+            </div>
 
-        <!-- Filtro por mes (oculto hasta tener datos) -->
-        <div id="monthFilterWrapper" class="month-filter-wrapper hidden">
-          <label for="monthFilter" class="filter-label">Mes</label>
-          <select id="monthFilter" class="filter-select">
-            <option value="all">Todos</option>
-          </select>
-        </div>
+            <section id="uploadSection" class="upload-section">
+                <div class="upload-card" id="dropZone">
+                    <div id="modeIndicator" class="upload-badge">Modo: Formato Estándar (Ingresos/Egresos)</div>
+                    <i class="ph ph-cloud-arrow-up upload-icon"></i>
+                    <h2>Cargar información financiera</h2>
+                    <p id="uploadInstructions">Arrastra tu archivo Excel aquí o haz clic para buscar</p>
+                    <div id="rawSheetsList">
+                        <strong>Bancos soportados:</strong> BBVA, Monex, Clara, Kapital, Konfío, Xepelin, Texas Bank.
+                    </div>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" hidden>
+                    <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">Seleccionar Archivo</button>
+                </div>
+            </section>
 
-        <!-- Botón exportar CSV (oculto hasta tener datos) -->
-        <button id="exportCsvBtn" class="btn btn-ghost hidden" onclick="exportCSV()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Exportar CSV
-        </button>
+            <div id="dashboardContent" style="display: none;">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Ingresos Totales</span>
+                            <div class="metric-icon income"><i class="ph ph-trend-up"></i></div>
+                        </div>
+                        <div class="metric-value" id="totalIncome">$0.00</div>
+                        <div class="metric-footer">
+                            <span class="trend positive"><i class="ph ph-caret-up"></i> 12%</span>
+                            <span>vs mes anterior</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Egresos Totales</span>
+                            <div class="metric-icon expense"><i class="ph ph-trend-down"></i></div>
+                        </div>
+                        <div class="metric-value" id="totalExpenses">$0.00</div>
+                        <div class="metric-footer">
+                            <span class="trend negative"><i class="ph ph-caret-down"></i> 5%</span>
+                            <span>vs mes anterior</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Balance Neto</span>
+                            <div class="metric-icon balance"><i class="ph ph-scales"></i></div>
+                        </div>
+                        <div class="metric-value" id="netBalance">$0.00</div>
+                        <div class="metric-footer">
+                            <span>Estado de flujo actual</span>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Toggle Dark/Light -->
-        <button class="btn btn-icon" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema">
-          <svg id="iconSun" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="hidden">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-          <svg id="iconMoon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
-        </button>
-      </div>
+                <div class="charts-grid">
+                    <div class="chart-container main-chart">
+                        <h3>Flujo de Caja Mensual</h3>
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Distribución por Categoría</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="transactions-container">
+                    <div class="table-header">
+                        <h3>Movimientos Consolidados</h3>
+                        <button class="btn-text">Ver todos <i class="ph ph-caret-right"></i></button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Categoría / Banco</th>
+                                    <th>Concepto</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-  </header>
 
-  <!-- ══════════════════════════════════
-       ZONA PRINCIPAL
-  ══════════════════════════════════ -->
-  <main class="main">
+    <script src="assets/script.js"></script>
+    <script>
+        // Función para manejar el cambio de pestañas visualmente
+        function switchMode(mode) {
+            const btnStandard = document.getElementById('btnStandard');
+            const btnRaw = document.getElementById('btnRaw');
+            const indicator = document.getElementById('modeIndicator');
+            const uploadSection = document.getElementById('uploadSection');
 
-    <!-- ── UPLOAD ZONE ── -->
-    <section id="uploadSection" class="upload-section">
-      <div class="upload-hero">
-        <div class="upload-badge">Dashboard Financiero Inteligente</div>
-        <h1 class="upload-title">Sube tu Excel.<br/>Obtén claridad financiera.</h1>
-        <p class="upload-subtitle">Analiza tus ingresos y egresos de forma automática. Resultados instantáneos, sin servidores.</p>
-      </div>
-
-      <!-- Drop Zone -->
-      <div
-        id="dropZone"
-        class="drop-zone"
-        ondragover="handleDragOver(event)"
-        ondragleave="handleDragLeave(event)"
-        ondrop="handleDrop(event)"
-        onclick="triggerFileInput()"
-      >
-        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none" onchange="handleFileChange(event)" />
-
-        <div class="drop-zone-content">
-          <div class="drop-icon">
-            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="18" x2="12" y2="12"/>
-              <polyline points="9 15 12 12 15 15"/>
-            </svg>
-          </div>
-          <p class="drop-main-text">Arrastra tu archivo Excel aquí</p>
-          <p class="drop-sub-text">o haz clic para seleccionarlo</p>
-          <span class="drop-format-badge">.xlsx &nbsp;·&nbsp; .xls</span>
-        </div>
-      </div>
-
-      <!-- Mensaje de error -->
-      <div id="errorMsg" class="error-message hidden">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span id="errorText"></span>
-      </div>
-
-      <!-- Features row -->
-      <div class="features-row">
-        <div class="feature-pill">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Sin servidor
-        </div>
-        <div class="feature-pill">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          100% privado
-        </div>
-        <div class="feature-pill">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Análisis automático
-        </div>
-        <div class="feature-pill">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Exportar CSV
-        </div>
-      </div>
-    </section>
-
-    <!-- ── LOADING ── -->
-    <section id="loadingSection" class="loading-section hidden">
-      <div class="loader-card">
-        <div class="spinner"></div>
-        <p class="loader-text">Procesando tu archivo…</p>
-        <p class="loader-sub">Esto solo toma un momento</p>
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════
-         DASHBOARD
-    ══════════════════════════════════ -->
-    <section id="dashboardSection" class="dashboard hidden">
-
-      <!-- Sub-header del dashboard -->
-      <div class="dash-header">
-        <div>
-          <h2 class="dash-title">Resumen Financiero</h2>
-          <p class="dash-subtitle" id="dashSubtitle">Año actual</p>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="resetApp()">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <polyline points="1 4 1 10 7 10"/>
-            <path d="M3.51 15a9 9 0 1 0 .49-4.49"/>
-          </svg>
-          Cargar otro archivo
-        </button>
-      </div>
-
-      <!-- ── KPI CARDS ── -->
-      <div class="kpi-grid">
-        <div class="kpi-card kpi-income">
-          <div class="kpi-label">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="12" y1="19" x2="12" y2="5"/>
-              <polyline points="5 12 12 5 19 12"/>
-            </svg>
-            Total Ingresos
-          </div>
-          <div class="kpi-value" id="kpiIncome">$0</div>
-          <div class="kpi-detail" id="kpiIncomeDetail">0 transacciones</div>
-        </div>
-
-        <div class="kpi-card kpi-expense">
-          <div class="kpi-label">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <polyline points="19 12 12 19 5 12"/>
-            </svg>
-            Total Egresos
-          </div>
-          <div class="kpi-value" id="kpiExpense">$0</div>
-          <div class="kpi-detail" id="kpiExpenseDetail">0 transacciones</div>
-        </div>
-
-        <div class="kpi-card kpi-balance">
-          <div class="kpi-label">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="12" y1="1" x2="12" y2="23"/>
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-            </svg>
-            Balance Neto
-          </div>
-          <div class="kpi-value" id="kpiBalance">$0</div>
-          <div class="kpi-detail" id="kpiBalanceDetail">—</div>
-        </div>
-
-        <div class="kpi-card kpi-rate">
-          <div class="kpi-label">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-            </svg>
-            Tasa de Ahorro
-          </div>
-          <div class="kpi-value" id="kpiRate">0%</div>
-          <div class="kpi-detail" id="kpiRateDetail">Del total de ingresos</div>
-        </div>
-      </div>
-
-      <!-- ── CHARTS ROW ── -->
-      <div class="charts-grid">
-
-        <!-- Gráfica barras: Ingresos vs Egresos por mes -->
-        <div class="chart-card chart-bar-card">
-          <div class="chart-header">
-            <h3 class="chart-title">Ingresos vs Egresos por Mes</h3>
-            <div class="chart-legend">
-              <span class="legend-dot legend-income"></span><span>Ingresos</span>
-              <span class="legend-dot legend-expense"></span><span>Egresos</span>
-            </div>
-          </div>
-          <div class="chart-body">
-            <canvas id="barChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfica dona: Egresos por tipo -->
-        <div class="chart-card chart-donut-card">
-          <div class="chart-header">
-            <h3 class="chart-title">Egresos por Tipo</h3>
-          </div>
-          <div class="chart-body donut-body">
-            <!-- el texto central se dibuja mediante plugin de Chart.js en el canvas -->
-            <canvas id="donutChart"></canvas>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ══════════════════════════════════
-           SECCIÓN: INGRESOS Y EGRESOS POR TIPO
-      ══════════════════════════════════ -->
-      <div class="section-divider">
-        <div class="section-divider-line"></div>
-        <span class="section-divider-label">Análisis por Tipo</span>
-        <div class="section-divider-line"></div>
-      </div>
-
-      <div class="tipo-grid">
-
-        <!-- Ingresos por tipo -->
-        <div class="chart-card tipo-card">
-          <div class="chart-header">
-            <div class="tipo-header-left">
-              <div class="tipo-dot tipo-dot-income"></div>
-              <h3 class="chart-title">Ingresos por Tipo</h3>
-            </div>
-            <span class="table-badge" id="tipoIngBadge">0 tipos</span>
-          </div>
-          <div class="chart-body tipo-chart-body">
-            <canvas id="tipoIngChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Egresos por tipo -->
-        <div class="chart-card tipo-card">
-          <div class="chart-header">
-            <div class="tipo-header-left">
-              <div class="tipo-dot tipo-dot-expense"></div>
-              <h3 class="chart-title">Egresos por Tipo</h3>
-            </div>
-            <span class="table-badge" id="tipoEgrBadge">0 tipos</span>
-          </div>
-          <div class="chart-body tipo-chart-body">
-            <canvas id="tipoEgrChart"></canvas>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── TABLAS DESGLOSE: INGRESOS + EGRESOS ── -->
-      <div class="cat-split-grid">
-
-        <!-- Tabla Ingresos por Tipo -->
-        <div class="table-card cat-card cat-card-ing">
-          <div class="table-header">
-            <div class="tipo-header-left">
-              <div class="tipo-dot tipo-dot-income"></div>
-              <h3 class="chart-title">Ingresos por Tipo</h3>
-            </div>
-            <span class="table-badge" id="catBadgeIng">0 tipos</span>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table cat-table" id="catTableIng">
-              <thead><tr><!-- JS --></tr></thead>
-              <tbody id="catBodyIng"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tabla Egresos por Tipo -->
-        <div class="table-card cat-card cat-card-egr">
-          <div class="table-header">
-            <div class="tipo-header-left">
-              <div class="tipo-dot tipo-dot-expense"></div>
-              <h3 class="chart-title">Egresos por Tipo</h3>
-            </div>
-            <span class="table-badge" id="catBadgeEgr">0 tipos</span>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table cat-table" id="catTableEgr">
-              <thead><tr><!-- JS --></tr></thead>
-              <tbody id="catBodyEgr"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── TABLA DETALLE TRANSACCIONES ── -->
-      <div class="table-card">
-        <div class="tx-table-header-wrap">
-          <!-- Título + badge + controles de filtro -->
-          <div class="tx-table-top-row">
-            <div class="tx-title-group">
-              <h3 class="chart-title">Detalle de Transacciones</h3>
-              <span class="table-badge" id="txBadge">0 registros</span>
-            </div>
-            <div class="tx-header-right">
-              <button id="txYearFilterBtn" class="tx-year-filter-btn">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <span class="tx-yr-label">Año</span>
-              </button>
-              <button id="txClearAllBtn" class="tx-clear-all-btn" onclick="clearAllTxFilters()" style="display:none">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-                Limpiar filtros
-              </button>
-            </div>
-          </div>
-          <!-- Botones rápidos de tipo -->
-          <div class="tx-quick-filters">
-            <span class="tx-qf-label">Filtro rápido:</span>
-            <button id="qfIngreso" class="tx-qf-btn tx-qf-income" onclick="applyQuickFilter('Ingreso')">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
-              </svg>
-              Ingresos
-            </button>
-            <button id="qfEgreso" class="tx-qf-btn tx-qf-expense" onclick="applyQuickFilter('Egreso')">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-              </svg>
-              Egresos
-            </button>
-          </div>
-        </div>
-        <div class="table-wrapper tx-table-wrapper">
-          <table class="data-table tx-enhanced-table" id="txTable">
-            <thead>
-              <tr><!-- Generado por JS (buildTxHeader) --></tr>
-            </thead>
-            <tbody id="txTableBody">
-              <!-- Generado por JS -->
-            </tbody>
-            <tfoot>
-              <tr class="tx-totals-row">
-                <td colspan="4" id="footCount" class="tx-foot-label">Totales</td>
-                <td class="text-right tx-foot-num" id="footImporte">—</td>
-                <td class="text-right tx-foot-num" id="footIva">—</td>
-                <td class="text-right tx-foot-num" id="footRet">—</td>
-                <td class="text-right tx-foot-num tx-foot-total" id="footTotal">—</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-
-    </section>
-    <!-- /dashboardSection -->
-
-  </main>
-
-  <!-- ── FOOTER ── -->
-  <footer class="footer">
-    <p>FinDash &nbsp;·&nbsp; Análisis 100% local &nbsp;·&nbsp; Tus datos nunca salen de tu navegador</p>
-  </footer>
-
-  <!-- ══════════════════════════════════
-       LIBRERÍAS EXTERNAS
-  ══════════════════════════════════ -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-  <script src="script.js"></script>
-
+            if (mode === 'standard') {
+                window.currentMode = 'standard';
+                btnStandard.classList.add('active');
+                btnRaw.classList.remove('active');
+                indicator.textContent = 'Modo: Formato Estándar (Ingresos/Egresos)';
+                indicator.style.color = 'var(--accent)';
+                uploadSection.classList.remove('mode-raw');
+            } else {
+                window.currentMode = 'raw';
+                btnRaw.classList.add('active');
+                btnStandard.classList.remove('active');
+                indicator.textContent = 'Modo: Información en Crudo (14 Bancos)';
+                indicator.style.color = '#e67e22'; // Un color distinto para avisar el cambio
+                uploadSection.classList.add('mode-raw');
+            }
+        }
+    </script>
 </body>
 </html>
