@@ -15,17 +15,17 @@
   <header class="header">
     <div class="header-inner">
       <div class="logo">
-        <img id="smt-logo" src="assets/SMTLogo.png" alt="SMT Logo" height="36" />
+        <img id="smt-logo" src="assets/SMTLogo.png" alt="SMT Logo" height="32" />
         <span class="logo-text">FinDash</span>
       </div>
-      <nav class="main-nav">
-        <a href="#" class="nav-link active"><i class="ph ph-squares-four"></i> Dashboard</a>
-        <a href="#" class="nav-link"><i class="ph ph-bank"></i> Bancos</a>
-        <a href="#" class="nav-link"><i class="ph ph-receipt"></i> Facturación</a>
-        <a href="#" class="nav-link"><i class="ph ph-gear"></i> Ajustes</a>
-      </nav>
+      
       <div class="header-actions">
-        <button class="btn btn-icon" id="themeToggle" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+        <div id="yearFilterWrapper" class="month-filter-wrapper hidden">
+          <select id="yearFilter" class="filter-select"><option value="all">Años</option></select>
+        </div>
+        <button class="btn btn-icon" id="themeToggle" onclick="toggleTheme()">
+          <i class="ph ph-moon"></i>
+        </button>
       </div>
     </div>
   </header>
@@ -33,30 +33,42 @@
   <main class="main">
     <section id="uploadSection" class="upload-section">
       <div class="upload-hero">
+        <div class="upload-badge">Dashboard Inteligente SMTO</div>
         <h1 class="upload-title">Control de Flujo</h1>
         <p class="upload-subtitle" id="modeStatus">Modo: <strong>Formato Estándar</strong></p>
         
         <div class="mode-toggle-container">
-          <button class="btn btn-mode active" id="btnStd" onclick="setAppMode('standard')">Formato Estándar</button>
-          <button class="btn btn-mode" id="btnRaw" onclick="setAppMode('raw')">Subir Bancos (Crudo)</button>
+          <button class="btn btn-mode active" id="btnStd" onclick="setAppMode('standard')">Estándar</button>
+          <button class="btn btn-mode" id="btnRaw" onclick="setAppMode('raw')">Bancos (Crudo)</button>
         </div>
       </div>
 
       <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
         <input type="file" id="fileInput" accept=".xlsx,.xls" hidden onchange="handleFileChange(event)" />
         <div class="drop-zone-content">
-          <i class="ph ph-cloud-arrow-up drop-icon-large"></i>
+          <div class="drop-icon">
+            <i class="ph-duotone ph-cloud-arrow-up" style="font-size: 40px;"></i>
+          </div>
           <p class="drop-main-text">Cargar Archivo Excel</p>
-          <p class="drop-sub-text">Arrastra aquí los reportes para procesar la información</p>
+          <p class="drop-sub-text">Arrastra los reportes aquí para procesar</p>
           <div id="rawInfo" class="raw-supported-list hidden">
-            <p><strong>Bancos soportados:</strong> BBVA, Monex, Clara, Kapital, Konfío, Xepelin, Texas Bank.</p>
+            <span class="drop-format-badge">BBVA · Monex · Clara · Kapital · Konfío · Xepelin</span>
           </div>
         </div>
       </div>
     </section>
 
     <section id="dashboardSection" class="dashboard hidden">
-      <div id="bankTabs" class="navigation-tabs"></div>
+      <div class="dash-header">
+        <div>
+          <h2 class="dash-title">Resumen Financiero</h2>
+          <p class="dash-subtitle" id="dashSubtitle">Análisis consolidado</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="location.reload()">
+          <i class="ph ph-arrows-clockwise"></i> Nueva Carga
+        </button>
+      </div>
+
       <div id="dashboardContent"></div>
     </section>
   </main>
