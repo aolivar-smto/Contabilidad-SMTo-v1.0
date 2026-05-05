@@ -1,207 +1,68 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinDash SMTO | Dashboard Contable</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/styles.css">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        /* Estilos corregidos para las pestañas de navegación superiores */
-        .navigation-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-1);
-        }
-
-        .nav-tab {
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: transparent;
-            border: none;
-            color: var(--text-2);
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-
-        .nav-tab.active {
-            background: var(--bg-2);
-            color: var(--primary);
-        }
-
-        /* Selector de modo de carga (Standard vs Raw) */
-        .mode-selector-container {
-            background: #fff;
-            padding: 12px 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border-1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .mode-options {
-            display: flex;
-            gap: 10px;
-        }
-
-        .mode-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-1);
-            background: #f8fafc;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .mode-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinDash SMTO | Control de Flujo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-    <div class="app-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <div class="logo-icon"></div>
-                    <span>FinDash</span>
-                </div>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active"><i class="ph ph-squares-four"></i> Dashboard</a>
-                <a href="#" class="nav-item"><i class="ph ph-bank"></i> Bancos</a>
-                <a href="#" class="nav-item"><i class="ph ph-receipt"></i> Facturación</a>
-                <a href="#" class="nav-item"><i class="ph ph-gear"></i> Ajustes</a>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="user-profile">
-                    <div class="avatar">SM</div>
-                    <div class="user-info">
-                        <span class="name">SMTO Contabilidad</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
 
-        <main class="main-content">
-            <header class="top-header">
-                <div class="header-search">
-                    <h1>Control de Flujo</h1>
-                    <p id="currentModeLabel">Modo: Formato Estándar</p>
-                </div>
-                <div class="mode-options">
-                    <button class="mode-btn active" id="btnModeStd" onclick="setMode('standard')">Estándar</button>
-                    <button class="mode-btn" id="btnModeRaw" onclick="setMode('raw')">Subir Bancos (Crudo)</button>
-                </div>
-            </header>
-
-            <section id="uploadSection" class="upload-section">
-                <div class="upload-card" id="dropZone">
-                    <i class="ph ph-cloud-arrow-up upload-icon"></i>
-                    <h2>Cargar Archivo Excel</h2>
-                    <p>Arrastra aquí los reportes para procesar la información</p>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls" hidden>
-                    <button class="btn-primary" style="margin-top:20px" onclick="document.getElementById('fileInput').click()">Seleccionar Archivo</button>
-                </div>
-            </section>
-
-            <div id="dashboardContent" style="display: none;">
-                
-                <div class="navigation-tabs">
-                    <button class="nav-tab active">Vista General</button>
-                    <button class="nav-tab">BBVA MXN</button>
-                    <button class="nav-tab">BBVA USD</button>
-                    <button class="nav-tab">Monex</button>
-                    <button class="nav-tab">Clara</button>
-                    <button class="nav-tab">Texas Bank</button>
-                    <button class="nav-tab">Kapital</button>
-                </div>
-
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <span class="metric-title">Ingresos Totales</span>
-                        <div class="metric-value income" id="totalIncome">$0.00</div>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-title">Egresos Totales</span>
-                        <div class="metric-value expense" id="totalExpenses">$0.00</div>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-title">Balance de Flujo</span>
-                        <div class="metric-value" id="netBalance">$0.00</div>
-                    </div>
-                </div>
-
-                <div class="charts-grid">
-                    <div class="chart-container">
-                        <h3>Tendencia Mensual</h3>
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>Distribución</h3>
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="transactions-container">
-                    <div class="table-header">
-                        <h3>Detalle de Movimientos</h3>
-                    </div>
-                    <div class="table-wrapper">
-                        <table id="transactionsTable">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Fuente/Banco</th>
-                                    <th>Concepto</th>
-                                    <th>Monto</th>
-                                    <th>Tipo</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <img id="smt-logo" src="assets/SMTLogo.png" alt="SMT Logo" height="36" />
+        <span class="logo-text">FinDash</span>
+      </div>
+      <nav class="main-nav">
+        <a href="#" class="nav-link active"><i class="ph ph-squares-four"></i> Dashboard</a>
+        <a href="#" class="nav-link"><i class="ph ph-bank"></i> Bancos</a>
+        <a href="#" class="nav-link"><i class="ph ph-receipt"></i> Facturación</a>
+        <a href="#" class="nav-link"><i class="ph ph-gear"></i> Ajustes</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-icon" id="themeToggle" onclick="toggleTheme()"><i class="ph ph-moon"></i></button>
+      </div>
     </div>
+  </header>
 
-    <script src="assets/script.js"></script>
-    <script>
-        // Función corregida para cambiar el modo de la aplicación
-        function setMode(mode) {
-            window.currentMode = mode;
-            const label = document.getElementById('currentModeLabel');
-            const btnStd = document.getElementById('btnModeStd');
-            const btnRaw = document.getElementById('btnModeRaw');
+  <main class="main">
+    <section id="uploadSection" class="upload-section">
+      <div class="upload-hero">
+        <h1 class="upload-title">Control de Flujo</h1>
+        <p class="upload-subtitle" id="modeStatus">Modo: <strong>Formato Estándar</strong></p>
+        
+        <div class="mode-toggle-container">
+          <button class="btn btn-mode active" id="btnStd" onclick="setAppMode('standard')">Formato Estándar</button>
+          <button class="btn btn-mode" id="btnRaw" onclick="setAppMode('raw')">Subir Bancos (Crudo)</button>
+        </div>
+      </div>
 
-            if(mode === 'standard') {
-                label.innerText = "Modo: Formato Estándar";
-                btnStd.classList.add('active');
-                btnRaw.classList.remove('active');
-            } else {
-                label.innerText = "Modo: Información en Crudo (14 Bancos)";
-                btnStd.classList.remove('active');
-                btnRaw.classList.add('active');
-            }
-        }
-    </script>
+      <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".xlsx,.xls" hidden onchange="handleFileChange(event)" />
+        <div class="drop-zone-content">
+          <i class="ph ph-cloud-arrow-up drop-icon-large"></i>
+          <p class="drop-main-text">Cargar Archivo Excel</p>
+          <p class="drop-sub-text">Arrastra aquí los reportes para procesar la información</p>
+          <div id="rawInfo" class="raw-supported-list hidden">
+            <p><strong>Bancos soportados:</strong> BBVA, Monex, Clara, Kapital, Konfío, Xepelin, Texas Bank.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboardSection" class="dashboard hidden">
+      <div id="bankTabs" class="navigation-tabs"></div>
+      <div id="dashboardContent"></div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
