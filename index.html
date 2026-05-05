@@ -13,68 +13,65 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* Estilos específicos para las nuevas pestañas */
-        .mode-selector {
+        /* Estilos corregidos para las pestañas de navegación superiores */
+        .navigation-tabs {
             display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 30px;
-            background: var(--bg-2);
-            padding: 8px;
-            border-radius: 16px;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-            border: 1px solid var(--border-1);
+            gap: 8px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-1);
         }
 
-        .tab-btn {
-            padding: 10px 24px;
-            border-radius: 12px;
-            border: none;
+        .nav-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
             background: transparent;
+            border: none;
             color: var(--text-2);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            background: var(--bg-2);
+            color: var(--primary);
+        }
+
+        /* Selector de modo de carga (Standard vs Raw) */
+        .mode-selector-container {
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .mode-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-1);
+            background: #f8fafc;
             cursor: pointer;
             font-weight: 600;
-            font-family: inherit;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .tab-btn i {
-            font-size: 1.2rem;
-        }
-
-        .tab-btn.active {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-        }
-
-        .upload-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--accent);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-        }
-
-        #rawSheetsList {
-            margin-top: 15px;
             font-size: 0.85rem;
-            color: var(--text-2);
-            display: none;
         }
 
-        .mode-raw #rawSheetsList {
-            display: block;
+        .mode-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
     </style>
 </head>
@@ -89,17 +86,15 @@
             </div>
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active"><i class="ph ph-squares-four"></i> Dashboard</a>
-                <a href="#" class="nav-item"><i class="ph ph-chart-line-up"></i> Ingresos</a>
-                <a href="#" class="nav-item"><i class="ph ph-chart-line-down"></i> Egresos</a>
                 <a href="#" class="nav-item"><i class="ph ph-bank"></i> Bancos</a>
-                <a href="#" class="nav-item"><i class="ph ph-file-text"></i> Reportes</a>
+                <a href="#" class="nav-item"><i class="ph ph-receipt"></i> Facturación</a>
+                <a href="#" class="nav-item"><i class="ph ph-gear"></i> Ajustes</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <div class="avatar">SM</div>
                     <div class="user-info">
                         <span class="name">SMTO Contabilidad</span>
-                        <span class="role">Administrador</span>
                     </div>
                 </div>
             </div>
@@ -108,104 +103,79 @@
         <main class="main-content">
             <header class="top-header">
                 <div class="header-search">
-                    <h1>Resumen Financiero</h1>
-                    <p>Monitoreo de flujos de efectivo y estados bancarios</p>
+                    <h1>Control de Flujo</h1>
+                    <p id="currentModeLabel">Modo: Formato Estándar</p>
                 </div>
-                <div class="header-actions">
-                    <button class="btn-icon"><i class="ph ph-bell"></i></button>
-                    <button class="btn-primary" onclick="location.reload()"><i class="ph ph-arrows-clockwise"></i> Actualizar</button>
+                <div class="mode-options">
+                    <button class="mode-btn active" id="btnModeStd" onclick="setMode('standard')">Estándar</button>
+                    <button class="mode-btn" id="btnModeRaw" onclick="setMode('raw')">Subir Bancos (Crudo)</button>
                 </div>
             </header>
 
-            <div class="mode-selector">
-                <button class="tab-btn active" id="btnStandard" onclick="switchMode('standard')">
-                    <i class="ph ph-file-spreadsheet"></i> Formato Estándar
-                </button>
-                <button class="tab-btn" id="btnRaw" onclick="switchMode('raw')">
-                    <i class="ph ph-bank"></i> Información en Crudo
-                </button>
-            </div>
-
             <section id="uploadSection" class="upload-section">
                 <div class="upload-card" id="dropZone">
-                    <div id="modeIndicator" class="upload-badge">Modo: Formato Estándar (Ingresos/Egresos)</div>
                     <i class="ph ph-cloud-arrow-up upload-icon"></i>
-                    <h2>Cargar información financiera</h2>
-                    <p id="uploadInstructions">Arrastra tu archivo Excel aquí o haz clic para buscar</p>
-                    <div id="rawSheetsList">
-                        <strong>Bancos soportados:</strong> BBVA, Monex, Clara, Kapital, Konfío, Xepelin, Texas Bank.
-                    </div>
+                    <h2>Cargar Archivo Excel</h2>
+                    <p>Arrastra aquí los reportes para procesar la información</p>
                     <input type="file" id="fileInput" accept=".xlsx, .xls" hidden>
-                    <button class="btn-secondary" onclick="document.getElementById('fileInput').click()">Seleccionar Archivo</button>
+                    <button class="btn-primary" style="margin-top:20px" onclick="document.getElementById('fileInput').click()">Seleccionar Archivo</button>
                 </div>
             </section>
 
             <div id="dashboardContent" style="display: none;">
+                
+                <div class="navigation-tabs">
+                    <button class="nav-tab active">Vista General</button>
+                    <button class="nav-tab">BBVA MXN</button>
+                    <button class="nav-tab">BBVA USD</button>
+                    <button class="nav-tab">Monex</button>
+                    <button class="nav-tab">Clara</button>
+                    <button class="nav-tab">Texas Bank</button>
+                    <button class="nav-tab">Kapital</button>
+                </div>
+
                 <div class="metrics-grid">
                     <div class="metric-card">
-                        <div class="metric-header">
-                            <span class="metric-title">Ingresos Totales</span>
-                            <div class="metric-icon income"><i class="ph ph-trend-up"></i></div>
-                        </div>
-                        <div class="metric-value" id="totalIncome">$0.00</div>
-                        <div class="metric-footer">
-                            <span class="trend positive"><i class="ph ph-caret-up"></i> 12%</span>
-                            <span>vs mes anterior</span>
-                        </div>
+                        <span class="metric-title">Ingresos Totales</span>
+                        <div class="metric-value income" id="totalIncome">$0.00</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-header">
-                            <span class="metric-title">Egresos Totales</span>
-                            <div class="metric-icon expense"><i class="ph ph-trend-down"></i></div>
-                        </div>
-                        <div class="metric-value" id="totalExpenses">$0.00</div>
-                        <div class="metric-footer">
-                            <span class="trend negative"><i class="ph ph-caret-down"></i> 5%</span>
-                            <span>vs mes anterior</span>
-                        </div>
+                        <span class="metric-title">Egresos Totales</span>
+                        <div class="metric-value expense" id="totalExpenses">$0.00</div>
                     </div>
                     <div class="metric-card">
-                        <div class="metric-header">
-                            <span class="metric-title">Balance Neto</span>
-                            <div class="metric-icon balance"><i class="ph ph-scales"></i></div>
-                        </div>
+                        <span class="metric-title">Balance de Flujo</span>
                         <div class="metric-value" id="netBalance">$0.00</div>
-                        <div class="metric-footer">
-                            <span>Estado de flujo actual</span>
-                        </div>
                     </div>
                 </div>
 
                 <div class="charts-grid">
-                    <div class="chart-container main-chart">
-                        <h3>Flujo de Caja Mensual</h3>
+                    <div class="chart-container">
+                        <h3>Tendencia Mensual</h3>
                         <canvas id="mainChart"></canvas>
                     </div>
                     <div class="chart-container">
-                        <h3>Distribución por Categoría</h3>
+                        <h3>Distribución</h3>
                         <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
 
                 <div class="transactions-container">
                     <div class="table-header">
-                        <h3>Movimientos Consolidados</h3>
-                        <button class="btn-text">Ver todos <i class="ph ph-caret-right"></i></button>
+                        <h3>Detalle de Movimientos</h3>
                     </div>
                     <div class="table-wrapper">
                         <table id="transactionsTable">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Categoría / Banco</th>
+                                    <th>Fuente/Banco</th>
                                     <th>Concepto</th>
                                     <th>Monto</th>
-                                    <th>Estado</th>
+                                    <th>Tipo</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
                 </div>
@@ -215,27 +185,21 @@
 
     <script src="assets/script.js"></script>
     <script>
-        // Función para manejar el cambio de pestañas visualmente
-        function switchMode(mode) {
-            const btnStandard = document.getElementById('btnStandard');
-            const btnRaw = document.getElementById('btnRaw');
-            const indicator = document.getElementById('modeIndicator');
-            const uploadSection = document.getElementById('uploadSection');
+        // Función corregida para cambiar el modo de la aplicación
+        function setMode(mode) {
+            window.currentMode = mode;
+            const label = document.getElementById('currentModeLabel');
+            const btnStd = document.getElementById('btnModeStd');
+            const btnRaw = document.getElementById('btnModeRaw');
 
-            if (mode === 'standard') {
-                window.currentMode = 'standard';
-                btnStandard.classList.add('active');
+            if(mode === 'standard') {
+                label.innerText = "Modo: Formato Estándar";
+                btnStd.classList.add('active');
                 btnRaw.classList.remove('active');
-                indicator.textContent = 'Modo: Formato Estándar (Ingresos/Egresos)';
-                indicator.style.color = 'var(--accent)';
-                uploadSection.classList.remove('mode-raw');
             } else {
-                window.currentMode = 'raw';
+                label.innerText = "Modo: Información en Crudo (14 Bancos)";
+                btnStd.classList.remove('active');
                 btnRaw.classList.add('active');
-                btnStandard.classList.remove('active');
-                indicator.textContent = 'Modo: Información en Crudo (14 Bancos)';
-                indicator.style.color = '#e67e22'; // Un color distinto para avisar el cambio
-                uploadSection.classList.add('mode-raw');
             }
         }
     </script>
